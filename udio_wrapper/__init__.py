@@ -14,7 +14,6 @@ class UdioWrapper:
     def solve_captcha(self):
         # Solve captcha
         captcha_solution = self.captcha_parser.parse_image()
-
         return captcha_solution
 
     def make_request(self, url, method, data=None, headers=None):
@@ -25,8 +24,6 @@ class UdioWrapper:
             headers["Cookie"] = f"sb-api-auth-token={self.auth_token}"
 
             if method == 'POST':
-                if 'captcha_token' in headers:
-                    del headers['captcha_token']  # Remove previous captcha token if present
                 captcha_solution = self.solve_captcha()
                 headers["H-Captcha-Token"] = captcha_solution
                 response = requests.post(url, headers=headers, json=data)
