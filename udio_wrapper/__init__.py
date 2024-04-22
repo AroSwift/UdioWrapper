@@ -1,21 +1,21 @@
-"""
-Udio Wrapper
-Author: Flowese
-Version: 0.0.3
-Date: 2024-04-15
-Description: Generates songs using the Udio API using textual prompts.
-"""
-
 import requests
 import os
 import time
+from nopecha import NopeCHAParser
 
 class UdioWrapper:
     API_BASE_URL = "https://www.udio.com/api"
 
-    def __init__(self, auth_token, captcha_token):
+    def __init__(self, auth_token, nopecha_api_key):
         self.auth_token = auth_token
-        self.captcha_token = captcha_token
+        self.nopecha_api_key = nopecha_api_key
+        self.captcha_parser = NopeCHAParser(api_key=nopecha_api_key)
+
+    def solve_captcha(self):
+        # Solve captcha
+        captcha_solution = self.captcha_parser.parse_image()
+
+        return captcha_solution
 
     def make_request(self, url, method, data=None, headers=None):
         try:
@@ -23,10 +23,12 @@ class UdioWrapper:
             headers["Accept"] = "application/json, text/plain, */*"
             headers["Content-Type"] = "application/json"
             headers["Cookie"] = f"sb-api-auth-token={self.auth_token}"
-            if self.captcha_token:
-                headers["H-Captcha-Token"] = self.captcha_token
 
             if method == 'POST':
+                if 'captcha_token' in headers:
+                    del headers['captcha_token']  # Remove previous captcha token if present
+                captcha_solution = self.solve_captcha()
+                headers["H-Captcha-Token"] = captcha_solution
                 response = requests.post(url, headers=headers, json=data)
             else:
                 response = requests.get(url, headers=headers)
@@ -57,6 +59,7 @@ class UdioWrapper:
                 "sec-fetch-dest": "empty"
             })
         return headers
+
 
     def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, seed=-1, custom_lyrics_short=None, custom_lyrics_extend=None, custom_lyrics_outro=None, num_extensions=1):
         print("Starting the generation of the complete song sequence...")
