@@ -13,13 +13,17 @@ import time
 class UdioWrapper:
     API_BASE_URL = "https://www.udio.com/api"
 
-    def __init__(self, auth_token):
+    def __init__(self, auth_token, captcha_token):
         self.auth_token = auth_token
+        self.captcha_token = captcha_token
         self.all_track_ids = []
 
     def make_request(self, url, method, data=None, headers=None):
         try:
             if method == 'POST':
+                if self.captcha_token:
+                    # Include H-Captcha token in the request headers
+                    headers["H-Captcha-Token"] = self.captcha_token
                 response = requests.post(url, headers=headers, json=data)
             else:
                 response = requests.get(url, headers=headers)
