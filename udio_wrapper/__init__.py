@@ -13,17 +13,18 @@ import time
 class UdioWrapper:
     API_BASE_URL = "https://www.udio.com/api"
 
-    def __init__(self, auth_token):
+    def __init__(self, auth_token, captcha_token):
         self.auth_token = auth_token
+        self.captcha_token = captcha_token
 
-    def make_request(self, url, method, data=None, headers=None, captcha_token=None):
+    def make_request(self, url, method, data=None, headers=None):
         try:
             headers = headers or {}
             headers["Accept"] = "application/json, text/plain, */*"
             headers["Content-Type"] = "application/json"
             headers["Cookie"] = f"sb-api-auth-token={self.auth_token}"
-            if captcha_token:
-                headers["H-Captcha-Token"] = captcha_token
+            if self.captcha_token:
+                headers["H-Captcha-Token"] = self.captcha_token
 
             if method == 'POST':
                 response = requests.post(url, headers=headers, json=data)
