@@ -9,8 +9,7 @@ class UdioWrapper:
     def __init__(self, auth_token, nopecha_api_key):
         self.auth_token = auth_token
         self.nopecha_api_key = nopecha_api_key
-
-    nopecha.api_key = nopecha_api_key
+        nopecha.api_key = nopecha_api_key
 
     def solve_captcha(self):
         # Solve captcha
