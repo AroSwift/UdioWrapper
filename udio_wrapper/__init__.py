@@ -15,7 +15,7 @@ class UdioWrapper:
         token = nopecha.Token.solve(
             type='hcaptcha',
             sitekey='04dTobrcPfCH2Cv1uxYioAFTikqddqvTLiHroKi8xM',
-            url='https://www.udio.com/api'
+            url='https://www.udio.com/'
         )
         return token
 
