@@ -1,7 +1,7 @@
 import requests
 import os
 import time
-from nopecha import NopeCHAParser
+import nopecha
 
 class UdioWrapper:
     API_BASE_URL = "https://www.udio.com/api"
@@ -9,12 +9,15 @@ class UdioWrapper:
     def __init__(self, auth_token, nopecha_api_key):
         self.auth_token = auth_token
         self.nopecha_api_key = nopecha_api_key
-        self.captcha_parser = NopeCHAParser(api_key=nopecha_api_key)
 
     def solve_captcha(self):
         # Solve captcha
-        captcha_solution = self.captcha_parser.parse_image()
-        return captcha_solution
+        token = nopecha.Token.solve(
+            type='hcaptcha',
+            sitekey='04dTobrcPfCH2Cv1uxYioAFTikqddqvTLiHroKi8xM',
+            url='https://www.udio.com/api'
+        )
+        return token
 
     def make_request(self, url, method, data=None, headers=None):
         try:
