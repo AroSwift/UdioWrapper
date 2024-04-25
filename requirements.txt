@@ -1,2 +1,2 @@
 requests==2.31.0
-twocaptcha-api
+2captcha-python
