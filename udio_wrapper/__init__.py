@@ -14,7 +14,7 @@ class UdioWrapper:
         try:
             result = self.solver.hcaptcha(
                 sitekey='2945592b-1928-43a9-8473-7e7fed3d752e',
-                url='https://www.udio.com/api/generate-proxy'
+                url='https://www.udio.com/'
             )
             return result['code']
         except Exception as e:
