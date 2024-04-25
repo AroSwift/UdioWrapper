@@ -1,24 +1,25 @@
 import requests
 import os
 import time
-import nopecha
+from twocaptcha import TwoCaptcha
 
 class UdioWrapper:
     API_BASE_URL = "https://www.udio.com/api"
 
-    def __init__(self, auth_token, nopecha_api_key):
+    def __init__(self, auth_token, twocaptcha_api_key):
         self.auth_token = auth_token
-        self.nopecha_api_key = nopecha_api_key
-        nopecha.api_key = nopecha_api_key
+        self.solver = TwoCaptcha(twocaptcha_api_key)
 
     def solve_captcha(self):
-        # Solve captcha
-        token = nopecha.Token.solve(
-            type='hcaptcha',
-            sitekey='2945592b-1928-43a9-8473-7e7fed3d752e',
-            url='https://www.udio.com/'
-        )
-        return token
+        try:
+            result = self.solver.hcaptcha(
+                sitekey='2945592b-1928-43a9-8473-7e7fed3d752e',
+                url='https://www.udio.com/'
+            )
+            return result['code']
+        except Exception as e:
+            print(f"Failed to solve captcha: {e}")
+            return None
 
     def make_request(self, url, method, data=None, headers=None):
         try:
@@ -29,7 +30,8 @@ class UdioWrapper:
 
             if method == 'POST':
                 captcha_solution = self.solve_captcha()
-                headers["H-Captcha-Token"] = captcha_solution
+                if captcha_solution:
+                    headers["H-Captcha-Token"] = captcha_solution
                 response = requests.post(url, headers=headers, json=data)
             else:
                 response = requests.get(url, headers=headers)
