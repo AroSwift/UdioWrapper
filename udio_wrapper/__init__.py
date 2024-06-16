@@ -7,6 +7,7 @@ class UdioWrapper:
     API_BASE_URL = "https://www.udio.com/api"
 
     def __init__(self, auth_token, twocaptcha_api_key):
+        self.all_track_ids = []
         self.auth_token = auth_token
         self.solver = TwoCaptcha(twocaptcha_api_key)
 
