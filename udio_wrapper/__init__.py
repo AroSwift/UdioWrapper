@@ -182,6 +182,8 @@ class UdioWrapper:
         data = {"prompt": prompt, "samplerOptions": {"seed": seed}}
         if custom_lyrics:
             data["lyricInput"] = custom_lyrics
+        else:
+            data["lyricInput"] = ''
         response = self.make_request(url, 'POST', data, headers)
         return response.json() if response else None
 
@@ -202,6 +204,8 @@ class UdioWrapper:
         }
         if custom_lyrics:
             data["lyricInput"] = custom_lyrics
+        else:
+            data["lyricInput"] = ''
         response = self.make_request(url, 'POST', data, headers)
         return response.json() if response else None
 
@@ -221,6 +225,8 @@ class UdioWrapper:
         }
         if custom_lyrics:
             data["lyricInput"] = custom_lyrics
+        else:
+            data["lyricInput"] = ''
         response = self.make_request(url, 'POST', data, headers)
         return response.json() if response else None
 
@@ -240,6 +246,8 @@ class UdioWrapper:
         }
         if custom_lyrics:
             data["lyricInput"] = custom_lyrics
+        else:
+            data["lyricInput"] = ''
         response = self.make_request(url, 'POST', data, headers)
         return response.json() if response else None
 
