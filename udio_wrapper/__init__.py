@@ -1,4 +1,5 @@
 import requests
+import random
 import os
 import time
 from twocaptcha import TwoCaptcha
@@ -65,7 +66,7 @@ class UdioWrapper:
         return headers
 
 
-    def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, seed=-1, custom_lyrics_short=None, custom_lyrics_extend=None, custom_lyrics_outro=None, num_extensions=1):
+    def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, seed=-1, custom_lyrics_short=None, custom_lyrics_extend=None, custom_lyrics_outro=None, custom_lyrics_intro=None, intro_prompt=None, num_extensions=1):
         print("Starting the generation of the complete song sequence...")
 
         # Generate the short song
@@ -77,6 +78,21 @@ class UdioWrapper:
 
         last_song_result = short_song_result
         extend_song_results = []
+
+        # Generate the intro
+        print("Generating the intro...")
+        intro_song_result = self.add_intro(
+            intro_prompt,
+            seed,
+            audio_conditioning_path=last_song_result[0]['song_path'],
+            audio_conditioning_song_id=last_song_result[0]['id'],
+            custom_lyrics=custom_lyrics_intro
+        )
+        if not intro_song_result:
+            print("Error generating the intro.")
+            return None
+        else:
+            last_song_result = intro_song_result
 
         # Generate the extend songs
         for i in range(num_extensions):
@@ -150,6 +166,16 @@ class UdioWrapper:
         self.all_track_ids.extend(outro_track_ids)
         return self.process_songs(outro_track_ids, "outro_songs")
 
+    def add_intro(self, prompt, seed=-1, audio_conditioning_path=None, audio_conditioning_song_id=None, custom_lyrics=None):
+        intro_result = self.generate_intro(
+            prompt, seed, audio_conditioning_path, audio_conditioning_song_id, custom_lyrics
+        )
+        if not intro_result:
+            return None
+        intro_track_ids = intro_result.get('track_ids', [])
+        self.all_track_ids.extend(intro_track_ids)
+        return self.process_songs(intro_track_ids, "intro_songs")
+
     def generate_song(self, prompt, seed, custom_lyrics=None):
         url = f"{self.API_BASE_URL}/generate-proxy"
         headers = self.get_headers()
@@ -162,13 +188,16 @@ class UdioWrapper:
     def generate_extend_song(self, prompt, seed, audio_conditioning_path, audio_conditioning_song_id, custom_lyrics=None):
         url = f"{self.API_BASE_URL}/generate-proxy"
         headers = self.get_headers()
+        
         data = {
             "prompt": prompt,
             "samplerOptions": {
                 "seed": seed,
                 "audio_conditioning_path": audio_conditioning_path,
                 "audio_conditioning_song_id": audio_conditioning_song_id,
-                "audio_conditioning_type": "continuation"
+                "audio_conditioning_type": "continuation",
+                "audio_conditioning_length_seconds": random.randint(70, 130),
+                "generation_quality": 0.95
             }
         }
         if custom_lyrics:
@@ -186,6 +215,7 @@ class UdioWrapper:
                 "audio_conditioning_path": audio_conditioning_path,
                 "audio_conditioning_song_id": audio_conditioning_song_id,
                 "audio_conditioning_type": "continuation",
+                "generation_quality": 0.95,
                 "crop_start_time": 0.9
             }
         }
@@ -193,6 +223,26 @@ class UdioWrapper:
             data["lyricInput"] = custom_lyrics
         response = self.make_request(url, 'POST', data, headers)
         return response.json() if response else None
+
+    def generate_intro(self, prompt, seed, audio_conditioning_path, audio_conditioning_song_id, custom_lyrics=None):
+        url = f"{self.API_BASE_URL}/generate-proxy"
+        headers = self.get_headers()
+        data = {
+            "prompt": prompt,
+            "samplerOptions": {
+                "seed": seed,
+                "audio_conditioning_path": audio_conditioning_path,
+                "audio_conditioning_song_id": audio_conditioning_song_id,
+                "audio_conditioning_type": "precede",
+                "generation_quality": 0.95,
+                "crop_start_time": 0.9
+            }
+        }
+        if custom_lyrics:
+            data["lyricInput"] = custom_lyrics
+        response = self.make_request(url, 'POST', data, headers)
+        return response.json() if response else None
+
 
     def process_songs(self, track_ids, folder):
         """Function to process generated songs, wait until they are ready, and download them."""
